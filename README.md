@@ -86,7 +86,7 @@ const API_KEY = 'sk-ant-...';  // line ~12
 ### Option B — React + Vite
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/catalyst-skill-agent
+git clone https://github.com/deepu027/catalyst-skill-agent
 cd catalyst-skill-agent/app
 npm install
 cp .env.example .env          # add VITE_ANTHROPIC_API_KEY=sk-ant-...
