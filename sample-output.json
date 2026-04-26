@@ -1,0 +1,111 @@
+{
+  "input": {
+    "jobDescription": "Senior Full-Stack Engineer — FinTech Startup\n\nWe are looking for a Senior Full-Stack Engineer to build and scale our payments infrastructure.\n\nRequirements:\n- 5+ years of experience with React and TypeScript\n- Strong proficiency in Node.js and REST API design\n- Experience with PostgreSQL and Redis for caching\n- Familiarity with Docker and Kubernetes for container orchestration\n- Understanding of CI/CD pipelines (GitHub Actions preferred)\n- Knowledge of OAuth 2.0 and security best practices\n- Experience with AWS (EC2, S3, RDS, Lambda)\n- Strong problem-solving skills and system design experience",
+    "resume": "Jane Doe — Software Engineer\n\nExperience:\n- 3 years at a SaaS startup building React + Redux front-ends\n- Worked with Node.js to build REST APIs\n- Basic SQL experience with MySQL\n- Used Git and GitHub for version control\n- Some exposure to Docker in local dev environments\n- Built a small personal project deployed on AWS S3 and EC2\n\nSkills: JavaScript, React, HTML/CSS, Node.js, MySQL, Git, Docker (beginner)"
+  },
+  "extractedSkills": [
+    { "name": "React", "level": "critical", "category": "Technical" },
+    { "name": "TypeScript", "level": "critical", "category": "Technical" },
+    { "name": "Node.js", "level": "critical", "category": "Technical" },
+    { "name": "PostgreSQL", "level": "important", "category": "Technical" },
+    { "name": "Redis", "level": "important", "category": "Technical" },
+    { "name": "Docker", "level": "important", "category": "Technical" },
+    { "name": "Kubernetes", "level": "important", "category": "Technical" },
+    { "name": "GitHub Actions / CI-CD", "level": "important", "category": "Technical" },
+    { "name": "OAuth 2.0", "level": "important", "category": "Technical" },
+    { "name": "AWS", "level": "critical", "category": "Technical" },
+    { "name": "System design", "level": "nice-to-have", "category": "Technical" }
+  ],
+  "assessmentResults": [
+    {
+      "skill": "React",
+      "question": "You're working on a React app where a parent component fetches data and passes it to three deeply nested children. The app is re-rendering excessively and users are noticing lag. How would you diagnose and fix this?",
+      "answer": "I'd use React DevTools Profiler to find the slow components. Then I'd use React.memo or useMemo to prevent unnecessary re-renders, and maybe move state down closer to where it's used.",
+      "score": 7,
+      "feedback": "Good practical answer — correct tools and memoization strategy, though didn't mention context or useCallback for callback props.",
+      "gapWeight": 9
+    },
+    {
+      "skill": "TypeScript",
+      "question": "A colleague hands you a function typed as (data: any) => any. How do you refactor it to be properly typed, and what TypeScript features would you use to make it generic enough to handle different data shapes?",
+      "answer": "I'd change the any types to more specific types. I know TypeScript has generics with the angle brackets but I haven't used them much in practice.",
+      "score": 4,
+      "feedback": "Aware of the problem and generics conceptually, but limited hands-on TypeScript experience shows — no mention of type guards, interfaces, or generic constraints.",
+      "gapWeight": 18
+    },
+    {
+      "skill": "PostgreSQL",
+      "question": "You need to add a feature where users can search posts by multiple tags. The posts table has millions of rows. How would you design the schema and query to keep it performant?",
+      "answer": "I'd add a tags column, maybe as a separate table with a join. I'd add an index on it. I haven't worked much with PostgreSQL specifically, mainly MySQL.",
+      "score": 3,
+      "feedback": "Understands the need for a junction table and indexing, but no PostgreSQL-specific knowledge — would benefit from learning GIN indexes, array types, or full-text search.",
+      "gapWeight": 21
+    },
+    {
+      "skill": "Docker",
+      "question": "Walk me through how you'd containerise a Node.js app with a PostgreSQL dependency for a production deployment — what would your Dockerfile and docker-compose.yml look like?",
+      "answer": "I've only used Docker locally. I know you write a Dockerfile with FROM node, COPY the files, and RUN npm install. I haven't done multi-container setups with compose in production.",
+      "score": 3,
+      "feedback": "Knows the basic Dockerfile structure but no production experience — hasn't worked with compose services, health checks, env var injection, or multi-stage builds.",
+      "gapWeight": 12
+    },
+    {
+      "skill": "Kubernetes",
+      "question": "Your company wants to migrate from docker-compose to Kubernetes. What are the core Kubernetes objects you'd use to replicate a docker-compose setup with a web app and a database?",
+      "answer": "I'm not familiar with Kubernetes. I've heard of pods and deployments but haven't used it.",
+      "score": 1,
+      "feedback": "No Kubernetes knowledge — this is the largest skill gap relative to the job requirement.",
+      "gapWeight": 18
+    },
+    {
+      "skill": "AWS",
+      "question": "Your app needs to process uploaded images asynchronously — resize and store them. Walk me through an AWS architecture that handles this at scale without blocking the main request.",
+      "answer": "I'd use S3 to store the images. I've heard Lambda can trigger on S3 events so maybe that could do the resizing. I haven't actually built this but it seems logical.",
+      "score": 5,
+      "feedback": "Correctly identifies S3 + Lambda event trigger pattern, but no practical experience with Lambda, IAM roles, SQS queues for reliability, or CloudWatch monitoring.",
+      "gapWeight": 18
+    }
+  ],
+  "gapAnalysis": [
+    { "skill": "PostgreSQL", "priority": "high", "score": 3, "gapWeight": 21 },
+    { "skill": "TypeScript", "priority": "high", "score": 4, "gapWeight": 18 },
+    { "skill": "Kubernetes", "priority": "high", "score": 1, "gapWeight": 18 },
+    { "skill": "AWS", "priority": "high", "score": 5, "gapWeight": 18 },
+    { "skill": "Docker", "priority": "medium", "score": 3, "gapWeight": 12 }
+  ],
+  "learningPlan": [
+    {
+      "skill": "PostgreSQL",
+      "priority": "high",
+      "weekEstimate": 3,
+      "why": "Jane has SQL basics from MySQL — PostgreSQL syntax is close, so the focus is on Postgres-specific features like advanced indexing and JSON types.",
+      "resources": [
+        { "title": "PostgreSQL Tutorial", "type": "Doc", "url": "https://www.postgresqltutorial.com", "free": true },
+        { "title": "The Art of PostgreSQL", "type": "Book", "url": "https://theartofpostgresql.com", "free": false },
+        { "title": "pgexercises.com", "type": "Project", "url": "https://pgexercises.com", "free": true }
+      ]
+    },
+    {
+      "skill": "TypeScript",
+      "priority": "high",
+      "weekEstimate": 4,
+      "why": "Jane writes JavaScript daily, so TypeScript is an adjacent skill — the main lift is generics, utility types, and strict mode patterns.",
+      "resources": [
+        { "title": "TypeScript Handbook", "type": "Doc", "url": "https://www.typescriptlang.org/docs/handbook", "free": true },
+        { "title": "Total TypeScript (Matt Pocock)", "type": "Course", "url": "https://www.totaltypescript.com", "free": false },
+        { "title": "Execute Program — TypeScript", "type": "Course", "url": "https://www.executeprogram.com/courses/typescript", "free": false }
+      ]
+    },
+    {
+      "skill": "Kubernetes",
+      "priority": "high",
+      "weekEstimate": 6,
+      "why": "Starting from zero — recommend building from Docker knowledge upward with a structured course and hands-on lab environment.",
+      "resources": [
+        { "title": "Docker & Kubernetes: The Practical Guide (Udemy)", "type": "Course", "url": "https://www.udemy.com/course/docker-kubernetes-the-practical-guide", "free": false },
+        { "title": "Kubernetes official interactive tutorial", "type": "Doc", "url": "https://kubernetes.io/docs/tutorials/kubernetes-basics", "free": true },
+        { "title": "Play with Kubernetes labs", "type": "Project", "url": "https://labs.play-with-k8s.com", "free": true }
+      ]
+    }
+  ]
+}

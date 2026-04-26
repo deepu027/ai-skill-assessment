@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Catalyst — AI Skill Assessment Agent</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #ffffff;
+      --bg2: #f5f4f0;
+      --bg3: #efede7;
+      --text: #1a1a18;
+      --text2: #6b6a65;
+      --text3: #9c9a93;
+      --border: rgba(0,0,0,0.12);
+      --border2: rgba(0,0,0,0.22);
+      --info-bg: #e6f1fb;
+      --info-text: #185fa5;
+      --success-bg: #eaf3de;
+      --success-text: #3b6d11;
+      --warn-bg: #faeeda;
+      --warn-text: #854f0b;
+      --danger-bg: #fcebeb;
+      --danger-text: #a32d2d;
+      --radius: 8px;
+      --radius-lg: 12px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1e1d1b;
+        --bg2: #2a2927;
+        --bg3: #333230;
+        --text: #e8e6df;
+        --text2: #a8a69f;
+        --text3: #6b6a65;
+        --border: rgba(255,255,255,0.1);
+        --border2: rgba(255,255,255,0.18);
+        --info-bg: #0c2d4a;
+        --info-text: #85b7eb;
+        --success-bg: #172d08;
+        --success-text: #97c459;
+        --warn-bg: #2d1e06;
+        --warn-text: #fac775;
+        --danger-bg: #2d0f0f;
+        --danger-text: #f09595;
+      }
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg3);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+    .container { max-width: 700px; margin: 0 auto; }
+    h1 { font-size: 22px; font-weight: 500; margin-bottom: 4px; }
+    .subtitle { font-size: 14px; color: var(--text2); margin-bottom: 1.5rem; }
+    .step-bar {
+      display: flex;
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+    .step {
+      flex: 1;
+      padding: 8px 4px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text3);
+      background: var(--bg2);
+    }
+    .step.active { background: var(--info-bg); color: var(--info-text); font-weight: 500; }
+    .step.done { background: var(--success-bg); color: var(--success-text); }
+    .card {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+    }
+    label { display: block; font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 6px; }
+    textarea, input[type=text] {
+      width: 100%;
+      background: var(--bg);
+      border: 0.5px solid var(--border2);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      font-size: 13px;
+      font-family: inherit;
+      color: var(--text);
+      resize: vertical;
+      line-height: 1.55;
+    }
+    textarea:focus, input[type=text]:focus { outline: none; border-color: var(--info-text); }
+    .field { margin-bottom: 1rem; }
+    button {
+      padding: 8px 18px;
+      border: 0.5px solid var(--border2);
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text);
+      transition: background 0.15s;
+    }
+    button:hover { background: var(--bg2); }
+    button.primary { background: var(--info-bg); color: var(--info-text); border-color: transparent; }
+    button.primary:hover { opacity: 0.85; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .skill-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 20px; font-size: 12px; margin: 3px;
+      background: var(--bg2); border: 0.5px solid var(--border); color: var(--text2);
+    }
+    .skill-chip.critical { background: var(--info-bg); color: var(--info-text); }
+    .chat-msg { margin-bottom: 12px; }
+    .chat-msg .role { font-size: 11px; color: var(--text3); margin-bottom: 4px; }
+    .chat-msg .bubble {
+      padding: 10px 14px; border-radius: var(--radius-lg);
+      font-size: 13px; line-height: 1.6; max-width: 90%;
+    }
+    .chat-msg.ai .bubble {
+      background: var(--bg2); border: 0.5px solid var(--border);
+      border-radius: 4px 12px 12px 12px;
+    }
+    .chat-msg.user .bubble {
+      background: var(--info-bg); color: var(--info-text);
+      margin-left: auto; border: none; border-radius: 12px 4px 12px 12px;
+    }
+    .chat-msg.user .role { text-align: right; }
+    .input-row { display: flex; gap: 8px; margin-top: 8px; }
+    .input-row input { flex: 1; padding: 9px 12px; border-radius: var(--radius); resize: none; }
+    .score-bar { height: 6px; border-radius: 3px; background: var(--bg2); overflow: hidden; margin: 4px 0; }
+    .score-fill { height: 100%; border-radius: 3px; transition: width 0.6s; }
+    .gap-item {
+      padding: 10px 12px; border-left: 3px solid;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      margin-bottom: 8px; background: var(--bg2);
+    }
+    .gap-item.high { border-color: #e24b4a; }
+    .gap-item.med { border-color: #ef9f27; }
+    .gap-item.low { border-color: #639922; }
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 500;
+    }
+    .badge.danger { background: var(--danger-bg); color: var(--danger-text); }
+    .badge.warn { background: var(--warn-bg); color: var(--warn-text); }
+    .badge.ok { background: var(--success-bg); color: var(--success-text); }
+    .resource-card {
+      border: 0.5px solid var(--border); border-radius: var(--radius);
+      padding: 10px 12px; margin: 6px 0; display: flex; gap: 10px; align-items: flex-start;
+    }
+    .res-icon {
+      width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0;
+      background: var(--bg2); display: flex; align-items: center;
+      justify-content: center; font-size: 14px;
+    }
+    .spinner {
+      display: inline-block; width: 14px; height: 14px;
+      border: 2px solid var(--border2); border-top-color: var(--info-text);
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+      vertical-align: middle; margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .section-title { font-size: 15px; font-weight: 500; margin-bottom: 10px; }
+    .muted { color: var(--text2); font-size: 12px; }
+    a { color: var(--info-text); }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Catalyst — Skill Assessment Agent</h1>
+  <p class="subtitle">Paste a job description and resume. The agent will assess real proficiency and build a personalised learning plan.</p>
+
+  <div class="step-bar" id="stepBar">
+    <div class="step active" id="s1">1. Input</div>
+    <div class="step" id="s2">2. Skills</div>
+    <div class="step" id="s3">3. Assessment</div>
+    <div class="step" id="s4">4. Results</div>
+  </div>
+
+  <!-- SCREEN: Input -->
+  <div id="screen-input">
+    <div class="field">
+      <label>Job description</label>
+      <textarea id="jdText" rows="8" placeholder="Paste the full job description…"></textarea>
+    </div>
+    <div class="field">
+      <label>Candidate resume</label>
+      <textarea id="resumeText" rows="8" placeholder="Paste the candidate's resume…"></textarea>
+    </div>
+    <button class="primary" id="btnAnalyze">Analyse skills →</button>
+  </div>
+
+  <!-- SCREEN: Skills -->
+  <div id="screen-skills" style="display:none">
+    <div class="card">
+      <div class="section-title">Required skills extracted</div>
+      <p class="muted" style="margin-bottom:10px">Blue chips = critical requirements</p>
+      <div id="skillList"></div>
+    </div>
+    <button class="primary" id="btnStartAssess">Start conversational assessment →</button>
+  </div>
+
+  <!-- SCREEN: Assessment -->
+  <div id="screen-assess" style="display:none">
+    <div class="card" style="min-height:300px;max-height:60vh;overflow-y:auto">
+      <div id="chatWindow"></div>
+      <div id="loadingMsg" style="display:none;font-size:13px;color:var(--text2)">
+        <span class="spinner"></span>Thinking…
+      </div>
+    </div>
+    <div class="input-row">
+      <input type="text" id="userInput" placeholder="Type your answer and press Enter…" />
+      <button id="btnSend">Send</button>
+    </div>
+    <p class="muted" style="margin-top:6px;text-align:right" id="progressNote"></p>
+  </div>
+
+  <!-- SCREEN: Results -->
+  <div id="screen-results" style="display:none">
+    <div class="card">
+      <div class="section-title">Proficiency scores</div>
+      <div id="scoreList"></div>
+    </div>
+    <div class="card">
+      <div class="section-title">Gap analysis</div>
+      <div id="gapList"></div>
+    </div>
+    <div class="card">
+      <div class="section-title">Personalised learning plan</div>
+      <div id="learningPlan"></div>
+    </div>
+    <div style="text-align:center;margin-top:1rem">
+      <button id="btnRestart">Start new assessment</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// CONFIG — replace with your Anthropic API key for local dev
+// In production, proxy this through a backend!
+// ============================================================
+const API_KEY = 'YOUR_ANTHROPIC_API_KEY_HERE';
+const API_URL = 'https://api.anthropic.com/v1/messages';
+const MODEL   = 'claude-sonnet-4-20250514';
+
+let state = {
+  jd: '', resume: '', skills: [],
+  currentSkill: 0, scores: {}, assessmentHistory: []
+};
+
+// ---- Utilities ----
+function setStep(n) {
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('s' + i);
+    el.className = 'step' + (i < n ? ' done' : i === n ? ' active' : '');
+  }
+}
+function showScreen(name) {
+  ['input', 'skills', 'assess', 'results'].forEach(s => {
+    document.getElementById('screen-' + s).style.display = s === name ? 'block' : 'none';
+  });
+}
+function showLoading(v) {
+  document.getElementById('loadingMsg').style.display = v ? 'block' : 'none';
+  document.getElementById('btnSend').disabled = v;
+}
+function addBubble(role, label, text) {
+  const win = document.getElementById('chatWindow');
+  const div = document.createElement('div');
+  div.className = `chat-msg ${role}`;
+  div.innerHTML = `<div class="role">${label}</div><div class="bubble">${text.replace(/\n/g,'<br>')}</div>`;
+  win.appendChild(div);
+  win.scrollTop = win.scrollHeight;
+}
+
+// ---- API ----
+async function callClaude(messages, system) {
+  const headers = {
+    'Content-Type': 'application/json',
+    'x-api-key': API_KEY,
+    'anthropic-version': '2023-06-01',
+    'anthropic-dangerous-direct-browser-access': 'true'
+  };
+  const body = JSON.stringify({ model: MODEL, max_tokens: 1000, system, messages });
+  const r = await fetch(API_URL, { method: 'POST', headers, body });
+  const d = await r.json();
+  if (d.error) throw new Error(d.error.message);
+  return d.content?.[0]?.text || '';
+}
+
+// ---- Stage 1: Analyse ----
+document.getElementById('btnAnalyze').addEventListener('click', async () => {
+  const jd     = document.getElementById('jdText').value.trim();
+  const resume = document.getElementById('resumeText').value.trim();
+  if (!jd || !resume) { alert('Please fill in both fields.'); return; }
+  state.jd = jd; state.resume = resume;
+
+  const btn = document.getElementById('btnAnalyze');
+  btn.disabled = true; btn.textContent = 'Analysing…';
+
+  const sys = `You are a technical recruiter AI. Extract required skills from a job description.
+Return ONLY valid JSON, no markdown backticks, no explanation.
+Format: {"skills":[{"name":"Skill Name","level":"critical|important|nice-to-have","category":"Technical|Soft"}]}`;
+
+  try {
+    const resp  = await callClaude([{ role: 'user', content: `Job Description:\n${jd}\n\nExtract all required skills.` }], sys);
+    const clean = resp.replace(/\`\`\`json|\`\`\`/g, '').trim();
+    state.skills = JSON.parse(clean).skills || [];
+
+    const list = document.getElementById('skillList');
+    list.innerHTML = '';
+    state.skills.forEach(sk => {
+      const chip = document.createElement('span');
+      chip.className = 'skill-chip' + (sk.level === 'critical' ? ' critical' : '');
+      chip.textContent = sk.name + (sk.level === 'nice-to-have' ? ' ✦' : '');
+      list.appendChild(chip);
+    });
+
+    setStep(2); showScreen('skills');
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+  btn.disabled = false; btn.textContent = 'Analyse skills →';
+});
+
+// ---- Stage 2: Start assessment ----
+document.getElementById('btnStartAssess').addEventListener('click', async () => {
+  setStep(3); showScreen('assess');
+  state.currentSkill = 0; state.scores = {}; state.assessmentHistory = [];
+  document.getElementById('chatWindow').innerHTML = '';
+  await askNextSkill();
+});
+
+const IMPORTANCE = { critical: 3, important: 2, 'nice-to-have': 1 };
+
+async function askNextSkill() {
+  const techSkills = state.skills.filter(s => s.category === 'Technical' || !s.category);
+  if (state.currentSkill >= techSkills.length) {
+    await generateResults(techSkills);
+    return;
+  }
+  const sk = techSkills[state.currentSkill];
+  document.getElementById('progressNote').textContent = `Skill ${state.currentSkill + 1} of ${techSkills.length}`;
+
+  const sys = `You are a senior technical interviewer assessing a candidate.
+Ask ONE targeted, practical question to assess real proficiency with "${sk.name}".
+Candidate background: ${state.resume.substring(0, 300)}
+Keep the question to 2–3 sentences. Be specific — ask about a real scenario, not self-rating.`;
+
+  showLoading(true);
+  const question = await callClaude([{ role: 'user', content: `Ask me a concise technical question to assess my proficiency in ${sk.name}.` }], sys);
+  showLoading(false);
+
+  addBubble('ai', `Assessing: ${sk.name}`, question);
+}
+
+async function handleUserAnswer() {
+  const inp = document.getElementById('userInput');
+  const answer = inp.value.trim();
+  if (!answer) return;
+  inp.value = '';
+
+  const techSkills = state.skills.filter(s => s.category === 'Technical' || !s.category);
+  const sk = techSkills[state.currentSkill];
+  addBubble('user', 'You', answer);
+  showLoading(true);
+
+  const sys = `You are a senior technical interviewer. Score the candidate's answer on "${sk.name}" from 1–10.
+1–3 = beginner, 4–6 = intermediate, 7–8 = proficient, 9–10 = expert.
+Respond ONLY with JSON (no markdown): {"score":7,"feedback":"One sentence feedback"}`;
+
+  try {
+    const resp  = await callClaude([{ role: 'user', content: `My answer about ${sk.name}: ${answer}` }], sys);
+    const clean = resp.replace(/\`\`\`json|\`\`\`/g, '').trim();
+    const ev    = JSON.parse(clean);
+
+    state.scores[sk.name] = {
+      score: ev.score,
+      feedback: ev.feedback,
+      required: sk.level,
+      importance: IMPORTANCE[sk.level] || 1,
+      gapWeight: IMPORTANCE[sk.level] * Math.max(0, 10 - ev.score)
+    };
+
+    addBubble('ai', 'Assessment', ev.feedback);
+    state.assessmentHistory.push({ skill: sk.name, answer, score: ev.score });
+    state.currentSkill++;
+    setTimeout(async () => { await askNextSkill(); }, 700);
+  } catch (e) {
+    addBubble('ai', 'Assessment', 'Thanks. Moving on.');
+    state.currentSkill++;
+    setTimeout(async () => { await askNextSkill(); }, 700);
+  }
+  showLoading(false);
+}
+
+document.getElementById('btnSend').addEventListener('click', handleUserAnswer);
+document.getElementById('userInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleUserAnswer(); }
+});
+
+// ---- Stage 3: Results ----
+async function generateResults(techSkills) {
+  setStep(4); showScreen('results');
+
+  // Proficiency scores
+  const scoreData = Object.entries(state.scores).map(([k, v]) => ({ skill: k, ...v }));
+  const sl = document.getElementById('scoreList');
+  sl.innerHTML = '';
+  scoreData.forEach(s => {
+    const pct   = Math.round(s.score * 10);
+    const color = s.score >= 7 ? '#639922' : s.score >= 5 ? '#ef9f27' : '#e24b4a';
+    sl.innerHTML += `<div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:2px">
+        <span style="font-size:13px;font-weight:500">${s.skill}</span>
+        <span style="font-size:12px;color:var(--text2)">${s.score}/10</span>
+      </div>
+      <div class="score-bar"><div class="score-fill" style="width:${pct}%;background:${color}"></div></div>
+      <p style="font-size:11px;color:var(--text2);margin-top:2px">${s.feedback || ''}</p>
+    </div>`;
+  });
+
+  // Gap analysis (sorted by gap weight)
+  const gaps = scoreData.filter(s => s.score < 7).sort((a, b) => b.gapWeight - a.gapWeight);
+  const gl   = document.getElementById('gapList');
+  if (gaps.length === 0) {
+    gl.innerHTML = '<p style="color:var(--success-text);font-size:13px">No significant gaps — strong candidate!</p>';
+  } else {
+    gaps.forEach(g => {
+      const severity = g.score < 4 ? 'high' : g.score < 6 ? 'med' : 'low';
+      const badge    = g.score < 4 ? 'danger' : g.score < 6 ? 'warn' : 'ok';
+      const label    = g.score < 4 ? 'Critical gap' : g.score < 6 ? 'Moderate gap' : 'Minor gap';
+      gl.innerHTML += `<div class="gap-item ${severity}">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong style="font-size:13px">${g.skill}</strong>
+          <span class="badge ${badge}">${label} · ${g.score}/10 · weight ${g.gapWeight}</span>
+        </div>
+        <p style="font-size:12px;color:var(--text2);margin-top:4px">${g.feedback}</p>
+      </div>`;
+    });
+  }
+
+  // Learning plan
+  const lp = document.getElementById('learningPlan');
+  lp.innerHTML = '<span class="spinner"></span><span style="font-size:13px;color:var(--text2)">Generating personalised plan…</span>';
+
+  const sys = `You are a learning path expert. Generate a personalised plan for skill gaps.
+Return ONLY JSON (no markdown):
+{"plan":[{"skill":"Name","priority":"high|medium|low","weekEstimate":4,"why":"1 sentence reason","resources":[{"title":"Resource Name","type":"Course|Book|Doc|Project","url":"https://...","free":true}]}]}
+Include 2–3 real, specific resources per skill. Base estimates on the candidate's existing background.`;
+
+  const gapSummary = gaps.map(g => `${g.skill}: score ${g.score}/10, importance: ${g.required}`).join('\n');
+
+  try {
+    const resp  = await callClaude([{ role: 'user', content: `Candidate background:\n${state.resume.substring(0, 400)}\n\nSkill gaps:\n${gapSummary}\n\nCreate prioritised learning plan.` }], sys);
+    const clean = resp.replace(/\`\`\`json|\`\`\`/g, '').trim();
+    const { plan } = JSON.parse(clean);
+    const icons = { Course: '▶', Book: '📖', Doc: '📄', Project: '⚙' };
+
+    lp.innerHTML = '';
+    plan.forEach(item => {
+      lp.innerHTML += `<div style="margin-bottom:1.5rem">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span class="badge ${item.priority === 'high' ? 'danger' : item.priority === 'medium' ? 'warn' : 'ok'}">${item.priority}</span>
+          <strong style="font-size:13px">${item.skill}</strong>
+          <span class="muted">~${item.weekEstimate} week${item.weekEstimate > 1 ? 's' : ''}</span>
+        </div>
+        <p style="font-size:12px;color:var(--text2);margin-bottom:8px">${item.why}</p>
+        ${item.resources.map(r => `<div class="resource-card">
+          <div class="res-icon">${icons[r.type] || '▶'}</div>
+          <div>
+            <a href="${r.url}" target="_blank" rel="noopener" style="font-size:13px;font-weight:500">${r.title}</a>
+            <div style="font-size:11px;color:var(--text2);margin-top:2px">${r.type} · ${r.free ? 'Free' : 'Paid'}</div>
+          </div>
+        </div>`).join('')}
+      </div>`;
+    });
+  } catch (e) {
+    lp.textContent = 'Error generating plan. ' + e.message;
+  }
+}
+
+document.getElementById('btnRestart').addEventListener('click', () => {
+  setStep(1); showScreen('input');
+  state = { jd: '', resume: '', skills: [], currentSkill: 0, scores: {}, assessmentHistory: [] };
+  document.getElementById('chatWindow').innerHTML = '';
+});
+</script>
+</body>
+</html>
